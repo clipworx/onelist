@@ -20,12 +20,13 @@ export default function LoginForm() {
       body: JSON.stringify({ email, password }),
     })
 
-    const data = await res.json()
-
+    if (res.redirected) {
+      window.location.href = res.url
+      return 
+    } 
     if (!res.ok) {
-      setError(data.error || 'Login failed')
-    } else {
-      router.push('/dashboard')
+      const data = await res.json()
+      setError(data.error)
     }
 
     setLoading(false)

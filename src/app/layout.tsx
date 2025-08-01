@@ -1,10 +1,12 @@
+export const dynamic = 'force-dynamic'
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from '@/components/Main/NavBar'
 import { cookies } from 'next/headers'
 import { verifyToken } from '@/lib/auth'
-
+import { Providers } from './providers'
+import { headers } from 'next/headers'
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -25,21 +27,28 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+   const pathname = (await headers()).get('x-pathname') || '' // Fallback if custom header not passed
+  const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/register')
   const token = (await cookies()).get('token')?.value
-  let isAuthenticated = false
+  let user = null
+
   if (token) {
     try {
-      verifyToken(token)
-      isAuthenticated = true
-    } catch {}
+      user = await verifyToken(token) as { userId: string, email: string, nickname?: string }
+    } catch {
+      user = null
+    }
   }
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {isAuthenticated && <NavBar />}
-        <main>{children}</main>
+        <Providers user={user}>
+          {!isAuthPage && user && <NavBar />}
+          <main>{children}</main>
+        </Providers>
       </body>
     </html>
   );

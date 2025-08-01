@@ -1,57 +1,36 @@
-import mongoose, { Schema, model, models } from 'mongoose'
+import mongoose, { InferSchemaType, Schema, model, models } from 'mongoose'
 
 const productSchema = new Schema({
   name: { type: String, required: true },
-
   unit: {
     type: String,
     enum: [
-      'pcs',     // pieces
-      'pack',
-      'bottle',
-      'can',
-      'kg',      // kilogram
-      'g',       // gram
-      'lb',      // pound
-      'oz',      // ounce
-      'liter',
-      'ml',
-      'dozen',
-      'bag',
-      'box',
-      'jar',
-      'tray',
+      'pcs', 'pack', 'bottle', 'can', 'kg', 'g', 'lb', 'oz', 'liter', 'ml',
+      'dozen', 'bag', 'box', 'jar', 'tray',
     ],
     required: true,
   },
-
   quantity: { type: Number, required: true },
-
   status: {
     type: String,
     enum: ['not_started', 'partial', 'completed'],
     default: 'not_started',
   },
-
-  quantityLacking: {
-    type: Number,
-    default: 0,
-  },
-
+  quantityLacking: { type: Number, default: 0 },
   completedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    default: null,
+    type: String,
+    default: null
+  },
+  addedBy: {
+    type: String,
   },
 })
 
 const listSchema = new Schema({
   name: { type: String, required: true },
-  products: [productSchema],
+  products: { type: [productSchema], default: [] },
   createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
+    type: String,
   },
   createdAt: {
     type: Date,
@@ -59,5 +38,6 @@ const listSchema = new Schema({
   },
 })
 
-export const List = models.List || model('List', listSchema)
-
+type ListType = InferSchemaType<typeof listSchema>
+const List = models.List || model<ListType>('List', listSchema)
+export { List }

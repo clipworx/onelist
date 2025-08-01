@@ -7,29 +7,34 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl
 
   const isAuthPage = url.pathname.startsWith('/auth/login') || url.pathname.startsWith('/auth/register')
+  try {
+    // Token exists and user tries to access login/register → redirect to dashboard
+    if (token) {
+      const payload = await verifyToken(token)
+      if (payload && isAuthPage) {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
 
-  // Token exists and user tries to access login/register → redirect to dashboard
-  if (token) {
-    const payload = await verifyToken(token)
-    if (payload && isAuthPage) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+      if (!payload && !isAuthPage) {
+        // Invalid token, redirect to login
+        return NextResponse.redirect(new URL('/auth/login', request.url))
+      }
+
+      return NextResponse.next()
     }
 
-    if (!payload && !isAuthPage) {
-      // Invalid token, redirect to login
+    // No token and user is trying to access a protected page → redirect to login
+    if (!token && !isAuthPage) {
       return NextResponse.redirect(new URL('/auth/login', request.url))
     }
 
-    return NextResponse.next()
-  }
-
-  // No token and user is trying to access a protected page → redirect to login
-  if (!token && !isAuthPage) {
-    return NextResponse.redirect(new URL('/auth/login', request.url))
-  }
-
   // No token but accessing login/register → allow
   return NextResponse.next()
+  } catch (err) {
+    console.error('Token verification failed:', err)
+    return NextResponse.redirect(new URL('/auth/login', request.url))
+  }
+  
 }
 
 export const config = {

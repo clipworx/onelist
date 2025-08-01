@@ -6,15 +6,16 @@ type Product = {
   name: string
   unit: string
   quantity: number
+  addedBy?: string
+  completedBy?: string | null
+  quantityLacking?: number
 }
 
 const units = ['pcs', 'kg', 'g', 'lb', 'oz', 'liter', 'ml', 'pack', 'bottle', 'can']
 
 export default function CreateListPage() {
   const [listName, setListName] = useState('')
-  const [products, setProducts] = useState<Product[]>([
-    { name: '', unit: 'pcs', quantity: 1 },
-  ])
+  const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
 
@@ -22,21 +23,30 @@ export default function CreateListPage() {
     setProducts([...products, { name: '', unit: 'pcs', quantity: 1 }])
   }
 
-  const handleProductChange = (index: number, field: keyof Product, value: any) => {
+  const handleProductChange = <K extends keyof Product>(
+    index: number,
+    field: K,
+    value: string
+  ) => {
     const updated = [...products]
+
     if (field === 'quantity') {
-      value = parseInt(value) || 0
+      updated[index][field] = Number(value) as Product[K]
+    } else {
+      updated[index][field] = value as Product[K]
     }
-    updated[index][field] = value
+
     setProducts(updated)
   }
+
+
 
   const handleSubmit = async () => {
     if (!listName.trim()) return alert('List name is required')
     setLoading(true)
     setMessage('')
 
-    const res = await fetch('/api/lists/create', {
+    const res = await fetch('/api/lists', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: listName, products }),
@@ -70,7 +80,7 @@ export default function CreateListPage() {
       </div>
 
       <div className="overflow-x-auto mt-4">
-  <table className="w-full table-auto border border-gray-200">
+  <table className="w-full table-auto border border-gray-200 text-black">
     <thead className="bg-gray-100">
       <tr className="text-left text-sm">
         <th className="p-2">Product</th>
@@ -81,7 +91,7 @@ export default function CreateListPage() {
     </thead>
     <tbody>
       {products.map((product, index) => (
-        <tr key={index} className="border-t border-gray-200 text-black">
+        <tr key={index} className="border-t border-gray-200 text-white">
           <td className="p-2">
             <input
               type="text"
@@ -98,7 +108,7 @@ export default function CreateListPage() {
               className="w-full px-2 py-1 border rounded-md text-sm"
             >
               {units.map((unit) => (
-                <option key={unit} value={unit}>{unit}</option>
+                <option className="text-black" key={unit} value={unit}>{unit}</option>
               ))}
             </select>
           </td>

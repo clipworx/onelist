@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
+import { useAuth } from '@/context/auth'
 
 const navItems = [
   { label: 'Home', href: '/dashboard' },
@@ -12,31 +12,30 @@ const navItems = [
 ]
 
 export default function Navbar() {
+  const { user, loading } = useAuth()
   const pathname = usePathname()
 
-  return (
-    <nav className="w-full px-6 py-4 bg-white border-b border-gray-200">
-      <div className="max-w-6xl mx-auto flex items-center justify-between">
-        {/* App Name */}
-        <Link href="/" className="text-xl font-bold text-blue-600">
-          OneList
-        </Link>
+  if (loading) return null
 
-        {/* Navigation Links */}
-        <div className="flex gap-4">
-          {navItems.map(({ label, href }) => (
+  return (
+    <nav className="p-4 bg-gray-100 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+      <div className="text-lg font-bold">OneList</div>
+      <ul className="flex gap-4">
+        {navItems.map((item) => (
+          <li key={item.href}>
             <Link
-              key={href}
-              href={href}
-              className={cn(
-                'text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors',
-                pathname === href && 'text-blue-600 font-semibold'
-              )}
+              href={item.href}
+              className={`text-sm sm:text-base ${
+                pathname === item.href ? 'font-semibold text-blue-600' : 'text-gray-700'
+              } hover:text-blue-500 transition-colors`}
             >
-              {label}
+              {item.label}
             </Link>
-          ))}
-        </div>
+          </li>
+        ))}
+      </ul>
+      <div className="text-sm sm:text-base text-gray-800">
+        {user?.nickname || user?.email}
       </div>
     </nav>
   )
