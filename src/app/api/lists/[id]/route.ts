@@ -5,8 +5,9 @@ import { List } from '@/models/List'
 export async function GET(request: Request, context: { params: { id: string } }) {
   try {
     await connectDB()
+    const { id } = await context.params
     //@ts-ignore
-    const list = await List.findById(context.params.id)
+    const list = await List.findById(id)
       .populate('createdBy', 'nickname') // Replace with 'name' if you have a `name` field
       .lean()
       .exec()

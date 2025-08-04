@@ -7,15 +7,17 @@ export async function PATCH(
   req: NextRequest,
   context: { params: { id: string; productId: string } }
 ) {
+  const { id, productId } = await context.params
+
   try {
     await connectDB()
     const user = await getUserFromCookie()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    const productId = context.params.productId
-    const id = context.params.id
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await req.json()
-    const { status, quantityLacking, userId } = body
-    console.error('PATCH request body:', body)
+    const { status, quantityLacking } = body
     //@ts-ignore
     const list = await List.findById(id)
     if (!list) return NextResponse.json({ error: 'List not found' }, { status: 404 })
@@ -36,6 +38,6 @@ export async function PATCH(
     await list.save()
     return NextResponse.json({ success: true, product })
   } catch (err) {
-    return NextResponse.json({ error: 'Failed to save list', details: err }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to save list', details: `${err}` }, { status: 500 })
   }
 }

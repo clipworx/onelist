@@ -53,7 +53,6 @@ export async function POST(req: Request) {
 
 export async function GET() {
   await connectDB()
-
   const token = (await cookies()).get('token')?.value
   if (!token) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
