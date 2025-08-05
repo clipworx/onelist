@@ -59,6 +59,7 @@ export default function CreateListPage() {
       setListName('')
       setProducts([{ name: '', unit: 'pcs', quantity: 1 }])
       setMessage('List created successfully!')
+      window.location.href = `/lists/${data.list._id}`
     } else {
       setMessage(data.error || 'Failed to create list')
     }

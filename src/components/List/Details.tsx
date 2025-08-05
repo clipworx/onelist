@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import ProductItem from '@/components/Product/Item'
+import { io } from 'socket.io-client'
 
 type Product = {
   _id: string
@@ -28,6 +29,7 @@ export default function ListDetails({ listId }: { listId: string }) {
   const [list, setList] = useState<List | null>(null)
   const [loading, setLoading] = useState(true)
   
+  const socket = io('http://192.168.1.2:3000')
   useEffect(() => {
     async function fetchList() {
       try {
@@ -40,8 +42,24 @@ export default function ListDetails({ listId }: { listId: string }) {
         setLoading(false)
       }
     }
+    const connect = async () => {
+      socket.on('productUpdated', async (data) => {
 
+        console.log('📦 Product updated:', data)
+        try {
+          const updatedRes = await fetch(`/api/lists/${listId}`)
+          const updatedList = await updatedRes.json()
+          setList(updatedList)
+        } catch (err) {
+          console.error('Error updating list:', err)
+        }
+      })
+    }
+    connect()
     fetchList()
+    return () => {
+      if (socket) socket.disconnect()
+    }
   }, [listId])
 
   if (loading) return <p>Loading...</p>

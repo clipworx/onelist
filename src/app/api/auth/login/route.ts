@@ -5,15 +5,16 @@ import { comparePassword } from '@/lib/bcrypt'
 import { signToken } from '@/lib/auth'
 
 export async function POST(req: Request) {
-  await connectDB()
-  const { email, password } = await req.json()
+  try {
+    await connectDB()
+    const { email, password } = await req.json()
 
-  const user = await User.findOne({ email })
-  if (!user || !comparePassword(password, user.password)) {
-    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
-  }
+    const user = await User.findOne({ email })
+    if (!user || !comparePassword(password, user.password)) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+    }
 
-  const token = signToken({ userId: user._id })
+    const token = signToken({ userId: user._id })
 
   // ✅ redirect to dashboard after login
   const res = NextResponse.redirect(new URL('/dashboard', req.url))
@@ -23,5 +24,9 @@ export async function POST(req: Request) {
     path: '/',
   })
 
-  return res
+    return res
+  } catch (error) {
+    console.error('❌ Error logging in:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }

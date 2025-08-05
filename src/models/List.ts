@@ -32,6 +32,9 @@ const listSchema = new Schema({
   createdBy: {
     type: String,
   },
+  sharedWith: {
+    type: [String],
+  },
   createdAt: {
     type: Date,
     default: Date.now,

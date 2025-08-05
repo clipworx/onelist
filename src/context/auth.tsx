@@ -14,10 +14,12 @@ type AuthContextType = {
   loading: boolean
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  loading: true,
-})
+const AuthContext = createContext<{
+  user: User | null
+  loading: boolean
+  setUser: React.Dispatch<React.SetStateAction<User | null>>
+} | null>(null)
+
 
 export function AuthProvider({
   children,
@@ -26,11 +28,12 @@ export function AuthProvider({
   children: React.ReactNode
   user: User | null
 }) {
-  const [user] = useState(initialUser)
+
+  const [user, setUser] = useState<User | null>(initialUser)
   const loading = false // no loading since user is passed from server
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, setUser }}>
       {children}
     </AuthContext.Provider>
   )

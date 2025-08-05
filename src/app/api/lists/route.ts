@@ -54,6 +54,7 @@ export async function POST(req: Request) {
 export async function GET() {
   await connectDB()
   const token = (await cookies()).get('token')?.value
+
   if (!token) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -64,11 +65,21 @@ export async function GET() {
   }
 
   try {
+    const userId = payload.userId
     //@ts-ignore
-    const lists = await List.find({ createdBy: payload.userId }).populate('createdBy', 'name').lean().exec() 
+    const lists = await List.find({
+      $or: [
+        { createdBy: userId },
+        { sharedWith: userId },
+      ],
+    })
+    .populate('createdBy', 'name email')
+    .lean()
+    .exec()
 
     return NextResponse.json({ lists }, { status: 200 })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
+

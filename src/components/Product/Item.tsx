@@ -33,14 +33,7 @@ export default function ProductItem({
   const handleUpdate = async () => {
     setUpdating(true)
     try {
-        console.log('Updating product:', {
-          listId,
-          productId: product._id,
-          status,
-          quantityLacking,
-          userId,
-        })
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lists/${listId}/products/${product._id}`, {
+      await fetch(`/api/lists/${listId}/products/${product._id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -49,7 +42,6 @@ export default function ProductItem({
           userId,
         }),
       })
-
       onUpdated()
     } catch (err) {
       console.error('Failed to update product:', err)

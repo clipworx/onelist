@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "ES6",
     "lib": [
       "dom",
       "dom.iterable",
@@ -11,12 +11,13 @@
     "strict": false,
     "noEmit": true,
     "incremental": true,
-    "module": "esnext",
+    "module": "commonjs",
     "esModuleInterop": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
+    "outDir": "dist",
     "plugins": [
       {
         "name": "next"
@@ -27,6 +28,7 @@
     }
   },
   "include": [
+    "server.ts",
     "next-env.d.ts",
     ".next/types/**/*.ts",
     "**/*.ts",

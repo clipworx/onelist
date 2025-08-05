@@ -1,4 +1,5 @@
 'use client'
+import router from 'next/router'
 import { useEffect, useState } from 'react'
 
 type Product = {
@@ -30,6 +31,17 @@ export default function ListsPage() {
   const [lists, setLists] = useState<List[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const res = await fetch('/api/auth/me')
+      const data = await res.json()
+      if (res.ok) setUserId(data.userId)
+    }
+
+    fetchUser()
+  }, [])
 
   useEffect(() => {
     const fetchLists = async () => {
@@ -55,7 +67,12 @@ export default function ListsPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Your Lists</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Your Lists</h1>
+        <button onClick={() => window.location.href = '/lists/new'} className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition">
+          Create a new list
+        </button>
+      </div>
 
       {lists.length === 0 ? (
         <p className="text-gray-500">No lists found.</p>
@@ -69,19 +86,33 @@ export default function ListsPage() {
                   key={list._id}
                   className="border rounded-xl p-4 bg-white shadow-sm"
                 >
-                  <div className="flex justify-between items-center mb-1">
-                    <h2 className="text-lg font-bold text-black ">{list.name}</h2>
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full ${
-                        status === 'completed'
-                          ? 'bg-green-100 text-green-700'
-                          : status === 'partial'
-                          ? 'bg-yellow-100 text-yellow-700'
-                          : 'bg-gray-200 text-gray-600'
-                      }`}
-                    >
-                      {status.replace('_', ' ')}
-                    </span>
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-lg font-bold text-black">{list.name}</h2>
+                    <div className="flex gap-2">
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full ${
+                          status === 'completed'
+                            ? 'bg-green-100 text-green-700'
+                            : status === 'partial'
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-gray-200 text-gray-600'
+                        }`}
+                      >
+                        {status.replace('_', ' ')}
+                      </span>
+
+                      <button
+                        className="text-blue-500 text-xs underline"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          const url = `${window.location.origin}/lists/${list._id}`
+                          navigator.clipboard.writeText(url)
+                          alert('Share link copied to clipboard!')
+                        }}
+                      >
+                        Share
+                      </button>
+                    </div>
                   </div>
                   <p className="text-sm text-gray-500">
                     Created by: {list.createdBy?.name || list.createdBy?._id}
