@@ -1,4 +1,5 @@
 import mongoose, { InferSchemaType, Schema, model, models } from 'mongoose'
+import { User } from '@/models/User'
 
 const productSchema = new Schema({
   name: { type: String, required: true },
@@ -17,24 +18,15 @@ const productSchema = new Schema({
     default: 'not_started',
   },
   quantityLacking: { type: Number, default: 0 },
-  completedBy: {
-    type: String,
-    default: null
-  },
-  addedBy: {
-    type: String,
-  },
+  completedBy: { type: Schema.Types.ObjectId, ref: User },
+  addedBy:{ type: Schema.Types.ObjectId, ref: User },
 })
 
 const listSchema = new Schema({
   name: { type: String, required: true },
   products: { type: [productSchema], default: [] },
-  createdBy: {
-    type: String,
-  },
-  sharedWith: {
-    type: [String],
-  },
+  createdBy: { type: Schema.Types.ObjectId, ref: User }, // must have ref
+  sharedWith: [{ type: Schema.Types.ObjectId, ref: User }],
   createdAt: {
     type: Date,
     default: Date.now,

@@ -1,14 +1,18 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-import { verifyToken } from '@/lib/auth' // your existing verifyToken
+import { NextResponse } from 'next/server'
+import { verifyToken } from '@/lib/auth'
+import { cookies } from 'next/headers'
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  const token = req.cookies.token
-  if (!token) return res.status(401).json({ message: 'Unauthorized' })
+export async function GET() {
+  const token = (await cookies()).get('token')?.value
+
+  if (!token) {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
+  }
 
   try {
-    const user = verifyToken(token)
-    return res.status(200).json(user)
+    const user = await verifyToken(token)
+    return NextResponse.json(user, { status: 200 })
   } catch {
-    return res.status(401).json({ message: 'Invalid token' })
+    return NextResponse.json({ message: 'Invalid token' }, { status: 401 })
   }
 }

@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import { verifyToken } from '@/lib/auth'
 import { connectDB } from '@/lib/db'
 import { List } from '@/models/List'
+import { User } from '@/models/User'
 
 export async function POST(req: Request) {
   await connectDB()
@@ -23,26 +24,33 @@ export async function POST(req: Request) {
 
   const { name, products } = body
 
-  products.forEach((product: any) => {
-    if (!product.name || !product.unit || !product.quantity) {
-      return NextResponse.json({ error: 'All product fields are required' }, { status: 400 })
-    }
-    product.addedBy = userId
-    product.completedBy = null
-    product.quantityLacking = product.quantity - (product.completed ? product.quantity : 0)
-  })
-
   if (!name) {
     return NextResponse.json({ error: 'List name is required' }, { status: 400 })
   }
 
+  if (!products || !Array.isArray(products)) {
+    return NextResponse.json({ error: 'Products must be an array' }, { status: 400 })
+  }
+  const updatedProducts = products.map((product: any) => {
+    if (!product.name || !product.unit || !product.quantity) {
+      throw new Error('All product fields are required')
+    }
+
+    return {
+      ...product,
+      addedBy: userId,
+      completedBy: null,
+      quantityLacking: product.quantity - (product.completed ? product.quantity : 0),
+    }
+  })
+
   try {
     const list = new List({
       name,
-      products: products || [],
+      products: updatedProducts,
       createdBy: userId,
     })
-    
+
     await list.save()
 
     return NextResponse.json({ message: 'List created', list }, { status: 201 })
@@ -70,15 +78,17 @@ export async function GET() {
     const lists = await List.find({
       $or: [
         { createdBy: userId },
-        { sharedWith: userId },
       ],
     })
-    .populate('createdBy', 'name email')
+    .populate({
+      path: 'createdBy',
+      select: 'nickname email',
+    })
     .lean()
-    .exec()
-
+    .exec();
     return NextResponse.json({ lists }, { status: 200 })
   } catch (err: any) {
+    console.error('Error fetching lists:', err)
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
