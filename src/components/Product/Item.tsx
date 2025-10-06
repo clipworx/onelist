@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Pencil } from "lucide-react"
-import { io } from 'socket.io-client'
+
 type CreatedBy = {
   nickname: string
   _id: string
@@ -35,7 +35,7 @@ export default function ProductItem({
   userId,
   onUpdated,
 }: ProductItemProps) {
-  let [status, setStatus] = useState(product.status)
+  const [status, setStatus] = useState(product.status)
   const [quantityLacking, setQuantityLacking] = useState(product.quantityLacking || 0)
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState("")

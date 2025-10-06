@@ -9,11 +9,6 @@ type User = {
   nickname?: string
 }
 
-type AuthContextType = {
-  user: User | null
-  loading: boolean
-}
-
 const AuthContext = createContext<{
   user: User | null
   loading: boolean

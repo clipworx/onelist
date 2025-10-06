@@ -1,4 +1,3 @@
-import type { NextApiRequest, NextApiResponse } from "next";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -12,6 +11,7 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ message: "Email sent" }, { status: 200 });
     } catch (err) {
+        console.error("Failed to send email:", err);
         return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
     }
 }

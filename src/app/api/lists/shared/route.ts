@@ -4,7 +4,8 @@ import { cookies } from 'next/headers'
 import { verifyToken } from '@/lib/auth'
 import { connectDB } from '@/lib/db'
 import { List } from '@/models/List'
-import { User } from '@/models/User'
+
+
 
 export async function GET() {
   await connectDB()
@@ -21,7 +22,7 @@ export async function GET() {
 
   try {
     const userId = payload.userId
-    //@ts-ignore
+
     const lists = await List.find({
       $or: [
         { sharedWith: userId },
@@ -34,9 +35,10 @@ export async function GET() {
     .lean()
     .exec();
     return NextResponse.json({ lists }, { status: 200 })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error fetching lists:', err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    const message = err instanceof Error ? err.message : 'Internal server error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 

@@ -1,16 +1,28 @@
-import mongoose, { InferSchemaType, Schema, model, models } from 'mongoose'
-import { User } from '@/models/User'
+import mongoose, { Schema, model, models, Document, Types } from 'mongoose'
 
-const productSchema = new Schema({
+export interface IProduct {
+  _id: Types.ObjectId
+  name: string
+  unit: string
+  quantity: number
+  status?: 'not_started' | 'partial' | 'completed'
+  quantityLacking?: number
+  completedBy?: Types.ObjectId
+  addedBy?: Types.ObjectId
+}
+
+export interface IList extends Document {
+  name: string
+  products: IProduct[]
+  createdBy: Types.ObjectId
+  sharedWith: Types.ObjectId[]
+  createdAt: Date
+  updatedAt: Date
+}
+
+const ProductSchema = new Schema<IProduct>({
   name: { type: String, required: true },
-  unit: {
-    type: String,
-    enum: [
-      'pcs', 'pack', 'bottle', 'can', 'kg', 'g', 'lb', 'oz', 'liter', 'ml',
-      'dozen', 'bag', 'box', 'jar', 'tray',
-    ],
-    required: true,
-  },
+  unit: { type: String, required: true },
   quantity: { type: Number, required: true },
   status: {
     type: String,
@@ -18,21 +30,18 @@ const productSchema = new Schema({
     default: 'not_started',
   },
   quantityLacking: { type: Number, default: 0 },
-  completedBy: { type: Schema.Types.ObjectId, ref: User },
-  addedBy:{ type: Schema.Types.ObjectId, ref: User },
+  completedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+  addedBy: { type: Schema.Types.ObjectId, ref: 'User' },
 })
 
-const listSchema = new Schema({
-  name: { type: String, required: true },
-  products: { type: [productSchema], default: [] },
-  createdBy: { type: Schema.Types.ObjectId, ref: User }, // must have ref
-  sharedWith: [{ type: Schema.Types.ObjectId, ref: User }],
-  createdAt: {
-    type: Date,
-    default: Date.now,
+const ListSchema = new Schema<IList>(
+  {
+    name: { type: String, required: true },
+    products: { type: [ProductSchema], default: [] },
+    createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    sharedWith: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   },
-})
+  { timestamps: true }
+)
 
-type ListType = InferSchemaType<typeof listSchema>
-const List = models.List || model<ListType>('List', listSchema)
-export { List }
+export const List = (models.List as mongoose.Model<IList>) || model<IList>('List', ListSchema)

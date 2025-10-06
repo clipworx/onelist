@@ -6,13 +6,14 @@ if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable in .env.local')
 }
 
-let cached = (global as any).mongoose || { conn: null, promise: null }
+type Cached = { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null }
+const cached = (global as unknown as { mongoose?: Cached }).mongoose || { conn: null, promise: null }
 
 export async function connectDB() {
   if (cached.conn) return cached.conn
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, {
+      cached.promise = mongoose.connect(MONGODB_URI, {
       dbName: 'onelist',
       bufferCommands: false,
     }).then((mongoose) => {

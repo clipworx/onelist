@@ -4,7 +4,13 @@ import { cookies } from 'next/headers'
 import { verifyToken } from '@/lib/auth'
 import { connectDB } from '@/lib/db'
 import { List } from '@/models/List'
-import { User } from '@/models/User'
+
+type InputProduct = {
+  name: string
+  unit: string
+  quantity: number
+  completed?: boolean
+}
 
 export async function POST(req: Request) {
   await connectDB()
@@ -20,8 +26,8 @@ export async function POST(req: Request) {
   }
 
   const userId = payload.userId
-  const body = await req.json()
-
+  const body = await req.json() as { name?: string; products?: InputProduct[] }
+  
   const { name, products } = body
 
   if (!name) {
@@ -31,8 +37,8 @@ export async function POST(req: Request) {
   if (!products || !Array.isArray(products)) {
     return NextResponse.json({ error: 'Products must be an array' }, { status: 400 })
   }
-  const updatedProducts = products.map((product: any) => {
-    if (!product.name || !product.unit || !product.quantity) {
+  const updatedProducts = products.map((product: InputProduct) => {
+    if (!product.name || !product.unit || typeof product.quantity !== 'number') {
       throw new Error('All product fields are required')
     }
 
@@ -54,8 +60,9 @@ export async function POST(req: Request) {
     await list.save()
 
     return NextResponse.json({ message: 'List created', list }, { status: 201 })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 
@@ -74,7 +81,6 @@ export async function GET() {
 
   try {
     const userId = payload.userId
-    //@ts-ignore
     const lists = await List.find({
       $or: [
         { createdBy: userId },
@@ -87,9 +93,10 @@ export async function GET() {
     .lean()
     .exec();
     return NextResponse.json({ lists }, { status: 200 })
-  } catch (err: any) {
-    console.error('Error fetching lists:', err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('Error fetching lists:', message)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 

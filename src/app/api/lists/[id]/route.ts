@@ -1,15 +1,19 @@
 import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/db'
 import { List } from '@/models/List'
-import { User } from '@/models/User'
 import { cookies } from 'next/headers'
 import { verifyToken } from '@/lib/auth'
 
-export async function GET(request: Request, context: { params: { id: string } }) {
+type Params = {
+  id: string;
+};
+
+
+export async function GET(request: Request, { params }: { params: Promise<Params> }) {
   try {
     await connectDB()
-    const { id } = await context.params
-    //@ts-ignore
+    const { id } = await params
+    
     const list = await List.findById(id)
       .populate('createdBy', 'nickname') 
       .lean()
@@ -24,7 +28,7 @@ export async function GET(request: Request, context: { params: { id: string } })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-export async function DELETE(request: Request, context: { params: { id: string } }) {
+export async function DELETE(request: Request, context: { params: Promise<Params> }) {
   await connectDB()
   const token = (await cookies()).get('token')?.value
 
@@ -41,7 +45,7 @@ export async function DELETE(request: Request, context: { params: { id: string }
   const { id } = await context.params
 
   try {
-    //@ts-ignore
+
     const list = await List.findById(id)
 
     if (!list) {
@@ -56,8 +60,9 @@ export async function DELETE(request: Request, context: { params: { id: string }
     await list.deleteOne()
 
     return NextResponse.json({ message: 'List deleted successfully' }, { status: 200 })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error deleting list:', err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    const message = err instanceof Error ? err.message : 'Internal server error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

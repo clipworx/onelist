@@ -3,8 +3,13 @@ import { getUserFromCookie } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
 import { List } from '@/models/List';
 import { User } from '@/models/User';
+import mongoose from 'mongoose';
 
-export async function PATCH(req: NextRequest, context: { params: { id: string } }) {
+type Params = {
+  id: string;
+};
+
+export async function PATCH(req: NextRequest, { params }: { params: Promise<Params> }) {
   const user = await getUserFromCookie();
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -12,8 +17,7 @@ export async function PATCH(req: NextRequest, context: { params: { id: string } 
 
   const { email } = await req.json();
   await connectDB();
-  const { id } = await context.params
-  //@ts-ignore
+  const { id } = await params;
   const list = await List.findById(id);
   if (!list) {
     return NextResponse.json({ error: 'List not found' }, { status: 404 });
@@ -39,7 +43,7 @@ export async function PATCH(req: NextRequest, context: { params: { id: string } 
   }
 
   // Add to sharedWith
-  list.sharedWith.push(targetUser._id);
+  list.sharedWith.push(new mongoose.Types.ObjectId(targetUser._id as string));
   await list.save();
 
   return NextResponse.json({ message: 'List shared successfully' });

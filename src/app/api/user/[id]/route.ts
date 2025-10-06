@@ -3,13 +3,17 @@ import { ObjectId } from "mongodb";
 import { connectDB } from "@/lib/db"; // adjust import based on your MongoDB connection
 import { User } from "@/models/User";
 
+type Params = {
+  id: string;
+};
+
 export async function GET(
   req: Request,
-  context: { params: { id: string } }
+  {params}: { params: Promise<Params> }
 ) {
   try {
     await connectDB();
-    const { id } = await context.params;
+    const { id } = await params;
 
     // Validate MongoDB ObjectId
     if (!ObjectId.isValid(id)) {
@@ -23,7 +27,8 @@ export async function GET(
     }
 
     return NextResponse.json(user, { status: 200 });
-  } catch (err) {
+  } catch (_err: unknown) {
+    console.error("Error fetching user:", _err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

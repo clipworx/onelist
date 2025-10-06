@@ -40,7 +40,6 @@ export default function ListsPage() {
   const [sharedLists, setSharedLists] = useState<List[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [userId, setUserId] = useState<string | null>(null)
   const [isOpen, setIsOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
   const [email, setEmail] = useState("");
@@ -102,8 +101,9 @@ export default function ListsPage() {
       // Remove the deleted list from the state
       setLists((prev) => prev.filter((list) => list._id !== selectedListId))
       setSharedLists((prev) => prev.filter((list) => list._id !== selectedListId))
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete list')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to delete list'
+      setError(message)
     } finally {
       setIsDeleteConfirmOpen(false)
     }
@@ -135,8 +135,9 @@ export default function ListsPage() {
       setStatusMessage("Email sent successfully!");
       
 
-    } catch (err) {
-      setStatusMessage("Error sending email. Please try again.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Error sending email. Please try again.'
+      setStatusMessage(message)
     } finally {
       setEmail("");
       setIsOpen(false);
@@ -161,8 +162,9 @@ export default function ListsPage() {
       if (!res.ok) throw new Error(data.error || 'Failed to load lists')
 
       setLists(data.lists)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load lists'
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -175,8 +177,9 @@ export default function ListsPage() {
       if (!res.ok) throw new Error(data.error || 'Failed to load lists')
 
       setSharedLists(data.lists)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load lists'
+      setError(message)
     } finally {
       setLoading(false)
       setIsSharedListsFetched(false)
@@ -184,13 +187,6 @@ export default function ListsPage() {
   }
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const res = await fetch('/api/auth/me')
-      const data = await res.json()
-      if (res.ok) setUserId(data.userId)
-    }
-
-    fetchUser()
     fetchSharedLists()
     fetchLists()
   }, [])
@@ -267,7 +263,7 @@ export default function ListsPage() {
         <h1 className="text-2xl font-bold">Shared with you</h1>
         <button
           className="text-blue-500 hover:text-blue-600 p-1 disabled:text-gray-400"
-          onClick={(e) => handleRefresh()}
+          onClick={() => handleRefresh()}
           title="Refresh"
           disabled={isSharedListsFetched}
         >

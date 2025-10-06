@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/context/auth'
-import { useEffect, useState } from 'react'
 const navItems = [
   { label: 'Home', href: '/dashboard' },
   { label: 'My Lists', href: '/lists' },
@@ -14,11 +13,6 @@ export default function Navbar() {
   const { user, loading, setUser } = useAuth()
   const pathname = usePathname()
   const router = useRouter()
-  const [isClient, setIsClient] = useState(false)
-
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
 
   if (loading || !user) return null
   const handleLogout = async () => {
