@@ -6,7 +6,7 @@ import { useAuth } from '@/context/auth'
 const navItems = [
   { label: 'Home', href: '/dashboard' },
   { label: 'My Lists', href: '/lists' },
-  { label: 'Settings', href: '/settings' },
+  // { label: 'Settings', href: '/settings' },
 ]
 
 export default function Navbar() {

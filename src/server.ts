@@ -20,7 +20,7 @@ appdev.prepare().then(async () => {
   })
 
   const io = new IOServer(server, {
-    cors: { origin: ['http://192.168.1.6:3000/', 'http://localhost:3000/', 'http://192.168.1.6:3000', 'http://localhost:3000'] },
+    cors: { origin: ['http://192.168.1.6:3000/', 'http://localhost:3000/', 'http://192.168.1.6:3000', 'http://localhost:3000', 'https://onelist.vercel.app/', 'https://onelist.vercel.app'] },
   })
   setIO(io)
 
