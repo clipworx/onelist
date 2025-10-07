@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import ProductItem from '@/components/Product/Item'
 import { io, Socket } from 'socket.io-client'
+import { useParams } from 'next/navigation'
 
 type CreatedBy = {
   nickname: string
@@ -35,7 +36,8 @@ type List = {
   }
 }
 
-export default function ListDetails({ listId }: { listId: string }) {
+export default function ListDetails() {
+  const params = useParams()
   const [list, setList] = useState<List | null>(null)
   const [loading, setLoading] = useState(true)
   
@@ -47,7 +49,7 @@ export default function ListDetails({ listId }: { listId: string }) {
 
     async function fetchList() {
       try {
-        const res = await fetch(`/api/lists/${listId}`)
+        const res = await fetch(`/api/lists/${params.id}`)
         const data = await res.json()
         setList(data)
       } catch (err) {
@@ -59,7 +61,7 @@ export default function ListDetails({ listId }: { listId: string }) {
 
     // Listen for normal product updates
     socket.on('productUpdated', async () => {
-      const updatedRes = await fetch(`/api/lists/${listId}`)
+      const updatedRes = await fetch(`/api/lists/${params.id}`)
       const updatedList = await updatedRes.json()
       setList(updatedList)
     })
@@ -94,7 +96,7 @@ export default function ListDetails({ listId }: { listId: string }) {
         socket.disconnect()
       }
     }
-  }, [listId])
+  }, [params.id])
 
   if (loading) return <p>Loading...</p>
   if (!list) return <p>List not found.</p>
@@ -110,7 +112,7 @@ export default function ListDetails({ listId }: { listId: string }) {
             product={product}
             userId={list.createdBy._id} 
             onUpdated={async () => {
-              const updatedRes = await fetch(`/api/lists/${listId}`)
+              const updatedRes = await fetch(`/api/lists/${params.id}`)
               const updatedList = await updatedRes.json()
               setList(updatedList)
             }}
